@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="text">
+        {{desc}}
+    </div>
+    <ul>
+        {% for track in tracks %}
+            {% set name = track['name'] %}
+            {% set href = track['href'] %}
+            <li>
+                <a href="{{href}}">{{name}}<a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
