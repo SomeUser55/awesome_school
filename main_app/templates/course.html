@@ -1,16 +1,23 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    <div class="my_title">
+        {{title}}
+    </div>
+
     <div class="text">
         {{desc}}
     </div>
+
+    Choose track accoring to your level:
     <ul>
-        {% for track in tracks %}
-            {% set name = track['name'] %}
-            {% set href = track['href'] %}
+        {% for link in links %}
+            {% set name = link['name'] %}
+            {% set href = link['href'] %}
             <li>
-                <a href="{{href}}">{{name}}<a>
+                <a href="{{href}}">{{name}}</a>
             </li>
         {% endfor %}
     </ul>
+
 {% endblock %}

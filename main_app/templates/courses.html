@@ -2,9 +2,11 @@
 
 {% block content %}
     <div class="text">
-        <!-- {% set names = ['tom','jerry', 'spike'] %} -->
+        Choose any course.
+    </div>
 
-        <ul>
+    Courses:
+    <ul>
         {% for link in links %}
             {% set name = link['name'] %}
             {% set href = link['href'] %}
@@ -12,7 +14,7 @@
                 <a href="{{href}}">{{name}}</a>
             </li>
         {% endfor %}
-        </ul>
+    </ul>
         
-    </div>
+    
 {% endblock %}

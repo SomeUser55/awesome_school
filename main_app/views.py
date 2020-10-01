@@ -2,10 +2,11 @@
 from flask import request, render_template
 
 from main_app import app
+from main_app import db
 
 
 @app.route('/')
-def index():
+def index_view():
     return render_template(
         "index.html",
         title='Home',
@@ -15,16 +16,17 @@ def index():
 
 
 @app.route('/progress')
-def progress():
+def progress_view():
     return render_template(
         'progress.html',
         title='Progress',
         nav_item_id='progress',
+        not_done='true'
     )
 
 
 @app.route('/account')
-def account():
+def account_view():
     return render_template(
         'account.html',
         title='Account',
@@ -32,17 +34,8 @@ def account():
     )
 
 
-@app.route('/lesson')
-def lesson():
-    return render_template(
-        'lesson.html',
-        title='Lesson',
-        nav_item_id='lesson',
-    )
-
-
 @app.route('/login')
-def login():
+def login_view():
     return render_template(
         'login.html',
         title='Login',
@@ -51,7 +44,7 @@ def login():
 
 
 @app.route('/register')
-def register():
+def register_view():
     return render_template(
         'register.html',
         title='Register',
@@ -60,12 +53,15 @@ def register():
 
 
 @app.route('/courses')
-def courses():
-    links = [
-        {'name': 'Go', 'href': '/courses/golang'},
-        {'name': 'F#', 'href': '/courses/f_sharp'},
-        {'name': 'Python', 'href': '/courses/python'},
-    ]
+def courses_view():
+    links = []
+    for course_id, course_info in db.courses_dict.items():
+        name = course_info['title']
+        links.append({
+            'name': name,
+            'href': f"/course/{course_id}"
+        })
+
     return render_template(
         'courses.html',
         title='Courses',
@@ -74,58 +70,83 @@ def courses():
     )
 
 
-@app.route('/courses/<course_name>')
-def course(course_name):
-    desc_dict = {
-        'golang': '''Go is a statically typed, compiled programming language
-            designed at Google[14] by Robert Griesemer, Rob Pike, and Ken Thompson''',
-        'f_sharp': '''F# (pronounced F sharp) is a functional-first,
-            general purpose, strongly typed, multi-paradigm programming language
-            that encompasses functional, imperative, and object-oriented programming methods.''',
-        'python': '''Python is an interpreted, high-level and general-purpose programming language.
-            Created by Guido van Rossum and first released in 1991,
-            Python's design philosophy emphasizes code readability with its notable use of significant whitespace.''',
-    }
-    track_dicts = {
-        'python': [
-            {'name': 'beginer', 'href': '/courses/python/beginer'},
-            {'name': 'medium', 'href': '/courses/python/medium'},
-            {'name': 'hard', 'href': '/courses/python/hard'},
-        ]
-    }
-    desc = desc_dict[course_name]
-    tracks = track_dicts.get(course_name, [])
+@app.route('/course/<course_id>')
+def course_view(course_id):
+
+    course = db.courses_dict[course_id]
+    track_ids = course['track_ids']
+
+    track_links = []
+    for track_id in track_ids:
+        track = db.tracks_dict[track_id]
+        name = track['title']
+        track_links.append({
+            'name': name,
+            'href': f"/track/{track_id}"
+        })
+
+    title = course['title']
+    desc = course['desc']
     return render_template(
         'course.html',
-        title=course_name,
+        title=title,
         desc=desc,
-        nav_item_id='course',
-        tracks=tracks,
+        nav_item_id='courses',
+        links=track_links,
     )
 
 
-@app.route('/courses/<course_name>/<track_name>')
-def track(course_name, track_name):
+@app.route('/track/<track_id>')
+def track_view(track_id):
+    track = db.tracks_dict[track_id]
+    lesson_ids = track['lesson_ids']
+
+    lesson_links = []
+    for lesson_id in lesson_ids:
+        lesson = db.lessons_dict[lesson_id]
+        name = lesson['title']
+        lesson_links.append({
+            'name': name,
+            'href': f"/lesson/{lesson_id}",
+        })
+
+    title = track['title']
+    desc = track['desc']
     return render_template(
         'track.html',
-        title='{}: {}'.format(course_name, track_name),
-        nav_item_id='track',
+        title=title,
+        nav_item_id='courses',
+        links=lesson_links,
+        desc=desc,
+    )
+
+
+@app.route('/lesson/<lesson_id>')
+def lesson_view(lesson_id):
+    lesson = db.lessons_dict[lesson_id]
+    title = lesson['title']
+    return render_template(
+        'lesson.html',
+        title=title,
+        nav_item_id='courses',
+        )
+
+
+@app.route('/courses/<course_name>/<track_name>/<lesson_name>/<block_name>')
+def block_view(course_name, track_name, lesson_name, block_name):
+    # theory = teory_dict[]
+    return render_template(
+        'block.html',
+        title=block_name,
+        nav_item_id='block',
     )
 
 
 @app.route('/webinar')
-def webinar():
+def webinar_view():
     return render_template(
         'webinar.html',
         title='Webinar',
         nav_item_id='webinar',
     )
 
-
-@app.route('/block')
-def block():
-    return render_template(
-        'block.html',
-        title='Block',
-        nav_item_id='block',
-    )

@@ -2,6 +2,13 @@
 
 {% block content %}
     <div class="text">
-        progress content
+        {% if not_done %}
+            You have some undone lessons
+        {% endif %}
+        <!-- {% else %} -->
     </div>
+
+
+
+    <a href="{{continue_href}}">Continue from last point</a>
 {% endblock %}
