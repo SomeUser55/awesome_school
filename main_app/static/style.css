@@ -7,3 +7,10 @@
     color: red;
     font-size: x-large;
 }
+
+
+.centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
