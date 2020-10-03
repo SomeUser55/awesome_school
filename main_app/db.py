@@ -1,4 +1,31 @@
+
+from main_app import models
+
 import sqlalchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+
+class DatabaseHandler():
+    def __init__(self, *, session):
+        self.session = session
+
+    def create_and_save_user(self, *, email, password):
+        user = models.User(email=email, password=password)
+        self.session.add(user)
+        self.session.commit()
+        return user.id
+
+
+some_engine = create_engine('sqlite:///database.db')
+
+models.User.__table__.create(bind=some_engine, checkfirst=True)
+
+Session = sessionmaker(bind=some_engine)
+session = Session()
+
+database_handler = DatabaseHandler(session=session)
+
 
 courses_dict = {
     '1': {

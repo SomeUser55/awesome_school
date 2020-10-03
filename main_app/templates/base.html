@@ -23,9 +23,13 @@
                 <li class="nav-item" id="progress">
                   <a class="nav-link" href="/progress">Progress</a>
                 </li>
+
+                {% if current_user.is_authenticated %}
                 <li class="nav-item" id="account">
                     <a class="nav-link" href="/account">Account</a>
                 </li>
+                {% endif %}
+
                 <!-- <li class="nav-item" id="lesson">
                     <a class="nav-link" href="/lesson">Lesson</a>
                 </li> -->

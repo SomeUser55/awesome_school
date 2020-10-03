@@ -1,8 +1,9 @@
 
-from flask import request, render_template
+from flask import request, render_template, redirect, url_for
+from flask_login import login_required
 
 from main_app import app
-from main_app import db
+from main_app.db import database_handler
 
 
 @app.route('/')
@@ -25,8 +26,9 @@ def progress_view():
     )
 
 
-@app.route('/account')
-def account_view():
+@app.route('/account/<user_id>')
+@login_required
+def account_view(user_id):
     return render_template(
         'account.html',
         title='Account',
@@ -34,8 +36,13 @@ def account_view():
     )
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login_view():
+    if request.method == 'POST':
+        email = request.values.get('email')
+        password = request.values.get('password')
+
+
     return render_template(
         'login.html',
         title='Login',
@@ -43,8 +50,15 @@ def login_view():
     )
 
 
-@app.route('/register')
+@app.route('/register',  methods=['GET', 'POST'])
 def register_view():
+    if request.method == 'POST':
+        email = request.values.get('email')
+        password = request.values.get('password')
+        print(email, password)
+        user_id = database_handler.create_and_save_user(email=email, password=password)
+        return redirect(url_for('account_view', user_id=user_id))
+
     return render_template(
         'register.html',
         title='Register',

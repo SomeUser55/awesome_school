@@ -1,11 +1,15 @@
 
-from sqlalchemy import Column, Integer, String, PasswordType, EmailType
+from sqlalchemy import Column, Integer, String
+from sqlalchemy_utils import PasswordType, EmailType
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(50))
+    email = Column(EmailType)
     password = Column(PasswordType(
             schemes=[
                 'pbkdf2_sha512',
@@ -14,8 +18,10 @@ class User(Base):
 
             deprecated=['md5_crypt']
         ))
-    email = Column(EmailType)
 
     def __repr__(self):
-        return "<User(name='%s', fullname='%s', nickname='%s')>" % (
-        self.name, self.fullname, self.nickname)
+        return "<User(email='%s')>" % (
+        self.email)
+
+    def del_user(self):
+        pass
