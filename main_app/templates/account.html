@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 
+{% set nav_item_id = 'account' %}
+
 {% block content %}
     <div class="text">
-        Hi, username!
+        Hello, {{ current_user.first_name }}
     </div>
 
     <div>Your groups: ...</div>

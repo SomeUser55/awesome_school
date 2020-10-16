@@ -1,91 +1,106 @@
 
-from flask import request, render_template, redirect, url_for
-from flask_login import login_required
+from flask import request, render_template, redirect, url_for, flash
+from flask_login import login_required, current_user, login_user, logout_user
 
-from main_app import app
-from main_app.db import database_handler
+from main_app.forms import LoginForm, RegistrationForm
+from main_app import app, db
+
+from main_app.models import User
 
 
 @app.route('/')
-def index_view():
+def index():
     return render_template(
         "index.html",
         title='Home',
-        nav_item_id='home',
         # mycontent="Welcome to Awesome School!",
     )
 
 
 @app.route('/progress')
-def progress_view():
+@login_required
+def progress():
     return render_template(
         'progress.html',
         title='Progress',
-        nav_item_id='progress',
         not_done='true'
     )
 
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+
 @app.route('/account/<user_id>')
 @login_required
-def account_view(user_id):
+def account(user_id):
     return render_template(
         'account.html',
         title='Account',
-        nav_item_id='account',
     )
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(
+            first_name=form.first_name.data,
+            second_name=form.second_name.data,
+            email=form.email.data,
+        )
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('login'))
+
+    return render_template('register.html', title='Register', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
-def login_view():
-    if request.method == 'POST':
-        email = request.values.get('email')
-        password = request.values.get('password')
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('account'))
 
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
 
-    return render_template(
-        'login.html',
-        title='Login',
-        nav_item_id='login',
-    )
+        login_user(user, remember=form.remember_me.data)
+        return redirect(url_for('account', user_id=user.id))
 
-
-@app.route('/register',  methods=['GET', 'POST'])
-def register_view():
-    if request.method == 'POST':
-        email = request.values.get('email')
-        password = request.values.get('password')
-        print(email, password)
-        user_id = database_handler.create_and_save_user(email=email, password=password)
-        return redirect(url_for('account_view', user_id=user_id))
-
-    return render_template(
-        'register.html',
-        title='Register',
-        nav_item_id='register',
-    )
+    return render_template('login.html', title='Sign In', form=form)
 
 
 @app.route('/courses')
-def courses_view():
+def courses():
     links = []
-    for course_id, course_info in db.courses_dict.items():
-        name = course_info['title']
-        links.append({
-            'name': name,
-            'href': f"/course/{course_id}"
-        })
+    # for course_id, course_info in db.courses_dict.items():
+    #     name = course_info['title']
+    #     links.append({
+    #         'name': name,
+    #         'href': f"/course/{course_id}"
+    #     })
 
     return render_template(
         'courses.html',
         title='Courses',
-        nav_item_id='courses',
         links=links,
     )
 
 
 @app.route('/course/<course_id>')
-def course_view(course_id):
+def course(course_id):
 
     course = db.courses_dict[course_id]
     track_ids = course['track_ids']
@@ -105,13 +120,12 @@ def course_view(course_id):
         'course.html',
         title=title,
         desc=desc,
-        nav_item_id='courses',
         links=track_links,
     )
 
 
 @app.route('/track/<track_id>')
-def track_view(track_id):
+def track(track_id):
     track = db.tracks_dict[track_id]
     lesson_ids = track['lesson_ids']
 
@@ -129,38 +143,34 @@ def track_view(track_id):
     return render_template(
         'track.html',
         title=title,
-        nav_item_id='courses',
         links=lesson_links,
         desc=desc,
     )
 
 
 @app.route('/lesson/<lesson_id>')
-def lesson_view(lesson_id):
+def lesson(lesson_id):
     lesson = db.lessons_dict[lesson_id]
     title = lesson['title']
     return render_template(
         'lesson.html',
         title=title,
-        nav_item_id='courses',
         )
 
 
 @app.route('/courses/<course_name>/<track_name>/<lesson_name>/<block_name>')
-def block_view(course_name, track_name, lesson_name, block_name):
+def block(course_name, track_name, lesson_name, block_name):
     # theory = teory_dict[]
     return render_template(
         'block.html',
         title=block_name,
-        nav_item_id='block',
     )
 
 
 @app.route('/webinar')
-def webinar_view():
+def webinar():
     return render_template(
         'webinar.html',
         title='Webinar',
-        nav_item_id='webinar',
     )
 

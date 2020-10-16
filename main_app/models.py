@@ -2,26 +2,29 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy_utils import PasswordType, EmailType
 from sqlalchemy.ext.declarative import declarative_base
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
-Base = declarative_base()
+from main_app import db, login
 
-class User(Base):
-    __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True)
-    email = Column(EmailType)
-    password = Column(PasswordType(
-            schemes=[
-                'pbkdf2_sha512',
-                'md5_crypt'
-            ],
-
-            deprecated=['md5_crypt']
-        ))
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(32))
+    second_name = db.Column(db.String(32))
+    email = db.Column(db.String(32), index=True, unique=True)
+    password_hash = db.Column(db.String(128))
 
     def __repr__(self):
-        return "<User(email='%s')>" % (
-        self.email)
+        return '<User {}>'.format(self.username)
 
-    def del_user(self):
-        pass
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
