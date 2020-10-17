@@ -1,0 +1,48 @@
+
+{% extends 'base.html' %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
+
+
+{% set nav_item_id = 'submits' %}
+
+{% block content %}
+    <div class="my_title">
+        {{title}}
+    </div>
+
+    <div class="text">
+        Submits:
+    </div>
+
+    <table id="submits_info">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Correct</th>
+                <th>Student</th>
+                <th>Contest</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for submit, user, contest in records %}
+                <tr>
+                    <td>{{ submit.create_tstamp }}</td>
+                    <td><a href="{{ url_for('submit', submit_id=submit.id) }}">{{ submit.is_correct }}</a></td>
+                    <td>{{ user.first_name }} {{ user.last_name  }}</td>
+                    <td>{{ contest.title }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready( function () {
+            $('#submits_info').DataTable();
+        } );
+    </script>
+    
+{% endblock %}
+
+

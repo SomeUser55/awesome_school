@@ -19,4 +19,8 @@ login.login_view = 'login'
 from main_app import views, models
 
 
-
+with app.app_context():
+    if db.engine.url.drivername == 'sqlite':
+        migrate.init_app(app, db, render_as_batch=True)
+    else:
+        migrate.init_app(app, db)

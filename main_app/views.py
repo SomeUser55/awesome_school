@@ -2,10 +2,10 @@
 from flask import request, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user, login_user, logout_user
 
-from main_app.forms import LoginForm, RegistrationForm
+from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, SolveContestForm
 from main_app import app, db
 
-from main_app.models import User
+from main_app.models import User, Contest, Submit
 
 
 @app.route('/')
@@ -66,8 +66,8 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('account'))
+    # if current_user.is_authenticated:
+    #     return redirect(url_for('account', user_id=current_user.id))
 
     form = LoginForm()
     if form.validate_on_submit():
@@ -168,9 +168,107 @@ def block(course_name, track_name, lesson_name, block_name):
 
 
 @app.route('/webinar')
+@login_required
 def webinar():
     return render_template(
         'webinar.html',
         title='Webinar',
     )
 
+
+@app.route('/contest/<contest_id>', methods=['GET', 'POST'])
+@login_required
+def contest(contest_id):
+    contest_obj = Contest.query.get(contest_id)
+    form = SolveContestForm()
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            is_correct = True
+            submit = Submit(
+                code=form.code.data,
+                contest_id=contest_id,
+                user_id=current_user.id,
+                is_correct=is_correct,
+            )
+            db.session.add(submit)
+            db.session.commit()
+            flash('Code submited')
+            return redirect(url_for('contest', contest_id=contest_obj.id))
+
+    return render_template(
+        'contest.html',
+        title='Contest',
+        contest=contest_obj,
+        form=form,
+    )
+
+
+@app.route('/contests')
+@login_required
+def contests():
+    contests = Contest.query.all()
+    return render_template(
+        'contests.html',
+        title='Contest List',
+        contests=contests,
+    )
+
+
+@app.route('/submits')
+@login_required
+def submits():
+    submits = Submit.query.all()
+
+    query = db.session.query(Submit, User, Contest)
+    records = query.all()
+
+    return render_template(
+        'submits.html',
+        title='Submit List',
+        records=records,
+    )
+
+
+@app.route('/submit/<submit_id>')
+@login_required
+def submit(submit_id):
+    submit_obj = Submit.query.get(submit_id)
+    contest_id = submit_obj.__dict__['contest_id']
+    contest_obj = Contest.query.get(contest_id)
+    return render_template(
+        'submit.html',
+        title='Submit',
+        submit_obj=submit_obj,
+        contest_obj=contest_obj,
+    )
+
+
+@app.route('/create', methods=['GET', 'POST'])
+@login_required
+def create():
+    form = CreateContestForm()
+
+    if request.method == 'POST':
+        form = CreateContestForm()
+        if form.validate_on_submit():
+            contest = Contest(
+                title=form.title.data,
+                desc=form.desc.data,
+                unit_test=form.unit_test.data,
+                lang=form.lang.data,
+            )
+            db.session.add(contest)
+            db.session.commit()
+            flash('Contest created')
+            return redirect(url_for('contest', contest_id=contest.id))
+        
+        flash('Wrong')
+
+    contests = Contest.query.all()
+    return render_template(
+        'create.html',
+        title='Create',
+        contests=contests,
+        form=form,
+    )

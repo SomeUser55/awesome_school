@@ -1,0 +1,21 @@
+
+{% extends 'base.html' %}
+
+{% set nav_item_id = 'contests' %}
+
+{% block content %}
+    <div class="my_title">
+        {{title}}
+    </div>
+
+    <div class="text">
+        Existing contests:
+    </div>
+
+    {% for contest in contests %}
+        <li>
+            <a href="{{ url_for('contest', contest_id=contest.id) }}">{{contest.title}}</a>
+        </li>
+    {% endfor %}
+
+{% endblock %}
