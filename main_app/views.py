@@ -17,7 +17,7 @@ def index():
     )
 
 
-@app.route('/progress')
+@app.route('/progress/')
 @login_required
 def progress():
     return render_template(
