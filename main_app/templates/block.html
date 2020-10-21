@@ -1,7 +1,44 @@
 {% extends 'base.html' %}
 
+{% set nav_item_id = 'block' %}
+
 {% block content %}
-    <div class="text">
+    <!-- <div class="text">
         lesson-block content
-    </div>
+    </div> -->
+
+    <div class="container">
+        <div class="row">
+          <div class="col-sm">
+            {{ block.title }}<br>
+          </div>
+          <div class="col-sm">
+            {{ block.desc }}<br>
+          </div>
+        </div>
+      </div>    
+
+      Contests:
+      <table id="contests_info" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Desctiption</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contest in contests %}
+                    <tr>
+                        <td><a href="{{ url_for('contest', contest_id=contest.id) }}">{{ contest.title }}</a></td>
+                        <!-- <td>{{ contest.desc }}</td> -->
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    
+        <script>
+            $(document).ready( function () {
+                $('#contests_info').DataTable();
+            } );
+        </script>
 {% endblock %}

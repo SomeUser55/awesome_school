@@ -2,10 +2,10 @@
 from flask import request, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user, login_user, logout_user
 
-from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, SolveContestForm
+from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, SolveContestForm, CreateBlockForm
 from main_app import app, db
 
-from main_app.models import User, Contest, Submit
+from main_app.models import User, Contest, Submit, Block
 
 
 @app.route('/')
@@ -158,12 +158,15 @@ def lesson(lesson_id):
         )
 
 
-@app.route('/courses/<course_name>/<track_name>/<lesson_name>/<block_name>')
-def block(course_name, track_name, lesson_name, block_name):
-    # theory = teory_dict[]
+@app.route('/block/<block_id>')
+@login_required
+def block(block_id):
+    block_obj = Block.query.get(block_id)
     return render_template(
         'block.html',
-        title=block_name,
+        title='Block',
+        block=block_obj,
+        contests=block_obj.contests,
     )
 
 
@@ -215,12 +218,26 @@ def contests():
     )
 
 
+@app.route('/blocks')
+@login_required
+def blocks():
+    blocks = Block.query.all()
+
+    return render_template(
+        'blocks.html',
+        title='Blocks',
+        blocks=blocks,
+    )
+
+
 @app.route('/submits')
 @login_required
 def submits():
     submits = Submit.query.all()
 
-    query = db.session.query(Submit, User, Contest)
+    query = db.session.query(Submit, User, Contest)\
+        .join(User, User.id==Submit.user_id)\
+            .join(Contest, Contest.id==Submit.contest_id)
     records = query.all()
 
     return render_template(
@@ -250,7 +267,7 @@ def create():
     form = CreateContestForm()
 
     if request.method == 'POST':
-        form = CreateContestForm()
+        # form = CreateContestForm()
         if form.validate_on_submit():
             contest = Contest(
                 title=form.title.data,
@@ -268,6 +285,62 @@ def create():
     contests = Contest.query.all()
     return render_template(
         'create.html',
+        title='Create',
+        contests=contests,
+        form=form,
+    )
+
+
+@app.route('/edit/<contest_id>', methods=['GET', 'POST'])
+@login_required
+def edit(contest_id):
+    contest_obj = Contest.query.get(contest_id)
+    form = CreateContestForm(obj=contest_obj)
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            contest_obj.title = form.title.data
+            contest_obj.desc = form.desc.data
+            contest_obj.unit_test = form.unit_test.data
+            contest_obj.lang = form.lang.data
+
+            db.session.commit()
+            flash('Contest edited')
+            return redirect(url_for('contest', contest_id=contest_obj.id))
+        
+        flash('Wrong')
+
+    contests = Contest.query.all()
+    return render_template(
+        'create.html',
+        title='Edit',
+        contests=contests,
+        form=form,
+    )
+
+
+@app.route('/create_block', methods=['GET', 'POST'])
+@login_required
+def create_block():
+    form = CreateBlockForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            block = Block(
+                title=form.title.data,
+                desc=form.desc.data,
+            )
+
+            for contest_id in form.contest_ids.data.split(','):
+                contest_obj = Contest.query.get(contest_id)
+                block.contests.append(contest_obj)
+
+            db.session.add(block)
+            db.session.commit()
+            flash('Block created')
+            return redirect(url_for('blocks'))
+    
+    contests = Contest.query.all()
+    return render_template(
+        'create_block.html',
         title='Create',
         contests=contests,
         form=form,

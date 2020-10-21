@@ -1,13 +1,15 @@
 
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Table
 from sqlalchemy_utils import PasswordType, EmailType, ChoiceType
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 
 from main_app import db, login
 
+# Base = declarative_base()
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -26,6 +28,12 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+contest_block_rel = Table('contest_block_rel', db.Model.metadata,
+    Column('contest_id', Integer, ForeignKey('contest.id')),
+    Column('block_id', Integer, ForeignKey('block.id')),
+)
+
+
 class Contest(db.Model):
     LANGS = [
         (u'python', u'Python'),
@@ -35,6 +43,20 @@ class Contest(db.Model):
     desc = db.Column(Text())
     unit_test = db.Column(Text())
     lang = db.Column(ChoiceType(LANGS))
+    blocks = relationship(
+        "Block",
+        secondary=contest_block_rel,
+        back_populates="contests")
+
+
+class Block(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(32))
+    desc = db.Column(Text())
+    contests = relationship(
+        "Contest",
+        secondary=contest_block_rel,
+        back_populates="blocks")
 
 
 class Submit(db.Model):

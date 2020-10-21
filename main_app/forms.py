@@ -1,7 +1,7 @@
 
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError, Length
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextField, SelectField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextField, SelectField, TextAreaField, FieldList, HiddenField
 
 from main_app.models import User, Contest
 
@@ -44,3 +44,11 @@ class CreateContestForm(FlaskForm):
 class SolveContestForm(FlaskForm):
     code = TextAreaField('Code', validators=[DataRequired()])
     submit = SubmitField('Run')
+
+
+class CreateBlockForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    desc = TextAreaField('Description', validators=[DataRequired()])
+    # contest_ids = FieldList(StringField('contest_id'), min_entries=2)
+    contest_ids = HiddenField()
+    submit = SubmitField('Save', id='submit_button')

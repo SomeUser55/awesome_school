@@ -26,3 +26,51 @@
     align-items: center;
     justify-content: center;
   }
+
+/*   
+h2 {
+    font-weight: bold;
+}
+div, li {
+    padding: 5px;
+    margin: 5px;
+    border: black 1px solid;
+}
+ul {
+    padding-bottom: 10px;
+}
+.item {
+    background-color: #DDD;
+    cursor: move;
+}
+body {
+    font-family: arial;
+    font-size: 14px;
+}
+.list {
+    padding: 1em;
+    background-color: #EEEEDD;
+    border: 1px solid #CCC;
+    max-width: 600px;
+}
+.list input {
+    font-family: Arial;
+}
+.list b {
+    font-weight: bold;
+}
+.list p {
+    margin-top: 0.9em;
+    margin-bottom: 0.9em;
+}
+.list-select {
+    width: 100%;
+    height: 8em;
+}
+.list h2 {
+    margin-top: 0.4em;
+}
+p, a {
+    font-size: .8em;
+}
+.trash { background-color: #000; } */

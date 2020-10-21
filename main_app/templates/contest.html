@@ -3,6 +3,7 @@
 {% set nav_item_id = 'contest' %}
 
 {% block content %}
+    <a href="{{ url_for('edit', contest_id=contest.id) }}">Edit</a>
 
 <form action="" method="post"  novalidate>
     {{ form.hidden_tag() }}
