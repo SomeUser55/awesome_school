@@ -2,7 +2,7 @@
 from flask import request, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user, login_user, logout_user
 
-from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, SolveContestForm, CreateBlockForm
+from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, SolveContestForm, CreateBlockForm, DeleteContestsForm
 from main_app import app, db
 
 from main_app.models import User, Contest, Submit, Block
@@ -207,14 +207,26 @@ def contest(contest_id):
     )
 
 
-@app.route('/contests')
+@app.route('/contests', methods=['GET', 'POST'])
 @login_required
 def contests():
+    form = DeleteContestsForm()
     contests = Contest.query.all()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            for contest_id in form.contest_ids.data.split(','):
+                print(contest_id)
+                Contest.query.filter_by(id=contest_id).delete()
+
+            db.session.commit()
+
+        return redirect(url_for('contests'))
+
     return render_template(
         'contests.html',
         title='Contest List',
         contests=contests,
+        form=form,
     )
 
 
@@ -345,3 +357,15 @@ def create_block():
         contests=contests,
         form=form,
     )
+
+
+# @app.route('/delete', methods=['GET', 'POST'])
+# @login_required
+# def delete():
+    
+#     return render_template(
+#         'create_block.html',
+#         title='Create',
+#         contests=contests,
+#         form=form,
+#     )

@@ -52,3 +52,8 @@ class CreateBlockForm(FlaskForm):
     # contest_ids = FieldList(StringField('contest_id'), min_entries=2)
     contest_ids = HiddenField()
     submit = SubmitField('Save', id='submit_button')
+
+
+class DeleteContestsForm(FlaskForm):
+    contest_ids = HiddenField(validators=[DataRequired()])
+    submit = SubmitField('Delete', id='submit_button')
