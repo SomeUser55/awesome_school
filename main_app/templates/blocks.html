@@ -14,30 +14,74 @@
 
 {% block content %}
 
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.1/css/select.dataTables.min.css">
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/select/1.3.1/js/dataTables.select.min.js"></script>
+
+
+
     <a href="{{ url_for('create_block') }}">Create New Block</a>
+
+    <form action="" method="post"  novalidate id='myform'>
+        {{ form.hidden_tag() }}
+        {{ form.submit() }}
+    </form>
 
     <table id="blocks_info" class="display" style="width:100%">
 
         <thead>
             <tr>
+                <th></th>
                 <th>Title</th>
             </tr>
         </thead>
         <tbody>
             {% for block in blocks %}
-                <tr>
+                <tr id="{{ block.id }}">
+                    <td></td>
                     <td><a href="{{ url_for('block', block_id=block.id) }}">{{ block.title }}</a></td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <script>
+    <!-- <script>
         $(document).ready( function () {
             $('#blocks_info').DataTable();
         } );
-    </script>
+    </script> -->
     
+    <script>
+        $(document).ready(function() {
+            table = $('#blocks_info').DataTable( {
+                columnDefs: [ {
+                    orderable: false,
+                    className: 'select-checkbox',
+                    targets:   0
+                } ],
+                select: {
+                    style:    'os',
+                    selector: 'td:first-child'
+                },
+                order: [[ 1, 'asc' ]],
+            } );
+        } );
+
+        $("#submit_button").on("click",
+            function(e){
+                // e.preventDefault(); 
+                var selected = table.rows('.selected').nodes();
+                var ids = [];
+                $.each(selected, function(i, val) {
+                    ids.push(val.id);
+                });
+                document.getElementById("block_ids").value = ids.join(',');
+                $("#myform").submit();
+        });
+    </script>
 {% endblock %}
 
 

@@ -24,7 +24,7 @@
                     <span style="color: red;">[{{ error }}]</span>
                     {% endfor %}
                 </div>
-                <div>{{ form.contest_ids() }}<br></div>
+                <!-- <div>{{ form.contest_ids() }}<br></div> -->
                 <div class="col-sm">
                     {{ form.submit() }}
                 </div>
@@ -40,13 +40,16 @@
 
             Contests:
             <ul class="list-group" id="contests_from">
-                {% for contest in contests %}
+                {% for contest in unused_contests %}
                     <li class="list-group-item" id={{ contest.id }}>{{ contest.title }}</li>
                 {% endfor %}
             </ul>
 
             Block (drag and drop):
             <ul class="list-group mt-4" id="contests_to">
+                {% for contest in block_contests %}
+                    <li class="list-group-item" id={{ contest.id }}>{{ contest.title }}</li>
+                {% endfor %}
             </ul>
           </div>
         </div>
@@ -81,8 +84,9 @@
         $(function () {
             $("#contests_to").sortable({
                 change: function(event, ui) {
-                var idsInOrder = $("#contests_to").sortable("toArray");
-                alert('change');
+                // var idsInOrder = $("#contests_to").sortable("toArray");
+                // alert(idsInOrder);
+                // alert('change');
                 }
             });
         });
@@ -90,7 +94,7 @@
             function(e){
                 // e.preventDefault();
                 var idsInOrder = $("#contests_to").sortable("toArray");
-                // alert('onclick');
+                // alert(idsInOrder);
                 document.getElementById("contest_ids").value = idsInOrder.join(',');
                 $("#myform").submit();
         });

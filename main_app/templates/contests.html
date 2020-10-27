@@ -39,6 +39,8 @@
             <tr>
                 <th></th>
                 <th>Title</th>
+                <th>Desctiption</th>
+
             </tr>
         </thead>
         <tbody>
@@ -46,17 +48,13 @@
                 <tr id="{{ contest.id }}">
                     <td></td>
                     <td> <a href="{{ url_for('contest', contest_id=contest.id) }}"> {{contest.title}} </a> </td>
+                    <td>{{ contest.desc }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 
     <script>
-        // $(document).ready( function () {
-        //     $('#contests_info').DataTable();
-        // } );
-
-
         $(document).ready(function() {
             table = $('#contests_info').DataTable( {
                 columnDefs: [ {

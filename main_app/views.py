@@ -2,10 +2,10 @@
 from flask import request, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user, login_user, logout_user
 
-from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, SolveContestForm, CreateBlockForm, DeleteContestsForm
+from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, SolveContestForm, CreateBlockForm, DeleteContestsForm, DeleteBlocksForm
 from main_app import app, db
 
-from main_app.models import User, Contest, Submit, Block
+from main_app.models import User, Contest, Submit, Block, contest_block_rel
 
 
 @app.route('/')
@@ -162,6 +162,7 @@ def lesson(lesson_id):
 @login_required
 def block(block_id):
     block_obj = Block.query.get(block_id)
+    print("block_obj.contests", block_obj.contests)
     return render_template(
         'block.html',
         title='Block',
@@ -183,6 +184,7 @@ def webinar():
 @login_required
 def contest(contest_id):
     contest_obj = Contest.query.get(contest_id)
+    print(contest_obj.blocks)
     form = SolveContestForm()
 
     if request.method == 'POST':
@@ -230,15 +232,25 @@ def contests():
     )
 
 
-@app.route('/blocks')
+@app.route('/blocks', methods=['GET', 'POST'])
 @login_required
 def blocks():
+    form = DeleteBlocksForm()
     blocks = Block.query.all()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            for block_id in form.block_ids.data.split(','):
+                Block.query.filter_by(id=block_id).delete()
+
+            db.session.commit()
+
+        return redirect(url_for('blocks'))
 
     return render_template(
         'blocks.html',
         title='Blocks',
         blocks=blocks,
+        form=form,
     )
 
 
@@ -330,22 +342,65 @@ def edit(contest_id):
     )
 
 
+@app.route('/edit_block/<block_id>', methods=['GET', 'POST'])
+@login_required
+def edit_block(block_id):
+    block_obj = Block.query.get(block_id)
+    form = CreateBlockForm(obj=block_obj)
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            block_obj.title = form.title.data
+            block_obj.desc = form.desc.data
+
+            contests_list = []
+            contest_ids = [id_ for id_ in form.contest_ids.data.split(',') if id_]
+            for contest_id in contest_ids:
+                contest_obj = Contest.query.get(contest_id)
+                contests_list.append(contest_obj)
+
+            print('contest_ids', contest_ids)
+            block_obj.contests = contests_list
+
+
+            rels = contest_block_rel.query.all()
+            print(rels)
+
+
+            db.session.commit()
+            flash('Contest edited')
+            return redirect(url_for('block', block_id=block_obj.id))
+        
+        flash('Wrong')
+
+    unused_contests = Contest.query.filter_by(blocks=None)
+    return render_template(
+        'create_block.html',
+        title='Edit',
+        unused_contests=unused_contests,
+        block_contests=block_obj.contests,
+        form=form,
+    )
+
+
+
 @app.route('/create_block', methods=['GET', 'POST'])
 @login_required
 def create_block():
     form = CreateBlockForm()
     if request.method == 'POST':
         if form.validate_on_submit():
-            block = Block(
+            block_obj = Block(
                 title=form.title.data,
                 desc=form.desc.data,
             )
 
-            for contest_id in form.contest_ids.data.split(','):
+            contest_ids = [id_ for id_ in form.contest_ids.data.split(',') if id_]
+            print("contest_ids", contest_ids)
+            for contest_id in contest_ids:
                 contest_obj = Contest.query.get(contest_id)
-                block.contests.append(contest_obj)
+                block_obj.contests.append(contest_obj)
 
-            db.session.add(block)
+            db.session.add(block_obj)
             db.session.commit()
             flash('Block created')
             return redirect(url_for('blocks'))
@@ -354,7 +409,8 @@ def create_block():
     return render_template(
         'create_block.html',
         title='Create',
-        contests=contests,
+        unused_contests=contests,
+        block_contests=[],
         form=form,
     )
 
