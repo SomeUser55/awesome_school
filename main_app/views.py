@@ -5,7 +5,7 @@ from flask_login import login_required, current_user, login_user, logout_user
 from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, SolveContestForm, CreateBlockForm, DeleteContestsForm, DeleteBlocksForm
 from main_app import app, db
 
-from main_app.models import User, Contest, Submit, Block, contest_block_rel
+from main_app.models import User, Contest, Submit, Block, contest_block_rel, Role
 
 
 @app.route('/')
@@ -50,10 +50,13 @@ def register():
 
     form = RegistrationForm()
     if form.validate_on_submit():
+        role_obj = Role.query.filter_by(role_type=form.role.data).first()
+
         user = User(
             first_name=form.first_name.data,
             second_name=form.second_name.data,
             email=form.email.data,
+            roles=[role_obj],
         )
         user.set_password(form.password.data)
         db.session.add(user)

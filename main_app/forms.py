@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError, Length
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextField, SelectField, TextAreaField, FieldList, HiddenField
 
-from main_app.models import User, Contest
+from main_app.models import User, Contest, Role
 
 
 class LoginForm(FlaskForm):
@@ -21,6 +21,7 @@ class RegistrationForm(FlaskForm):
     password2 = PasswordField(
         'Repeat Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
+    role = SelectField('Role', choices=Role.ROLES_PUBLIC)
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()

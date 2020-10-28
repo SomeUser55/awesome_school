@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Table
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Table, event
 from sqlalchemy_utils import PasswordType, EmailType, ChoiceType
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -10,6 +10,11 @@ import datetime
 from main_app import db, login
 
 # Base = declarative_base()
+
+user_role_rel = Table('user_role_rel', db.Model.metadata,
+    Column('user_id', Integer, ForeignKey('user.id'), nullable=False),
+    Column('role_id', Integer, ForeignKey('role.id'), nullable=False),
+)
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -26,6 +31,32 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    roles = relationship(
+        "Role",
+        secondary=user_role_rel,
+        back_populates="users",
+    )
+
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    users = relationship(
+        "User",
+        secondary=user_role_rel,
+        back_populates="roles",
+    )
+    ROLES_PUBLIC = [
+        (u'student', u'Student'),
+        (u'mentor', u'Mentor'),
+    ]
+    ROLES_PRIVATE = [
+        (u'admin', u'Admin'),
+    ]
+    role_type = db.Column(ChoiceType(ROLES_PUBLIC + ROLES_PRIVATE), nullable=False, unique=True)
+
+    def __repr__(self):
+        return '<Role {}>'.format(self.role_type)
 
 
 contest_block_rel = Table('contest_block_rel', db.Model.metadata,
