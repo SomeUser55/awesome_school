@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% set nav_item_id = 'create_block' %}
+{% set nav_item_id = 'create_track' %}
 
 
 {% block content %}
@@ -24,7 +24,6 @@
                     <span style="color: red;">[{{ error }}]</span>
                     {% endfor %}
                 </div>
-                <!-- <div>{{ form.contest_ids() }}<br></div> -->
                 <div class="col-sm">
                     {{ form.submit() }}
                 </div>
@@ -38,17 +37,17 @@
         <div class="col">
           <div class="jumbotron">
 
-            Contests:
-            <ul class="list-group" id="contests_from">
-                {% for contest in unused_contests %}
-                    <li class="list-group-item" id={{ contest.id }}>{{ contest.title }}</li>
+            Unused blocks:
+            <ul class="list-group" id="blocks_from">
+                {% for block in unused_blocks %}
+                    <li class="list-group-item" id={{ block.id }}>{{ block.title }}</li>
                 {% endfor %}
             </ul>
 
-            Block (drag and drop):
-            <ul class="list-group mt-4" id="contests_to">
-                {% for contest in block_contests %}
-                    <li class="list-group-item" id={{ contest.id }}>{{ contest.title }}</li>
+            Used blocks (drag and drop):
+            <ul class="list-group mt-4" id="blocks_to">
+                {% for block in used_blocks %}
+                    <li class="list-group-item" id={{ block.id }}>{{ block.title }}</li>
                 {% endfor %}
             </ul>
           </div>
@@ -62,47 +61,38 @@
     
 
     <script>
-        Sortable.create(contests_from, {
-            animation: 100,
-            group: 'list-1',
-            draggable: '.list-group-item',
-            handle: '.list-group-item',
-            sort: true,
-            filter: '.sortable-disabled',
-            chosenClass: 'active'
+        Sortable.create(blocks_from, {
+        animation: 100,
+        group: 'list-1',
+        draggable: '.list-group-item',
+        handle: '.list-group-item',
+        sort: true,
+        filter: '.sortable-disabled',
+        chosenClass: 'active'
         });
     
-        Sortable.create(contests_to, {
-            // group: 'list-1',
-            // handle: '.list-group-item'
-            animation: 100,
-            group: 'list-1',
-            draggable: '.list-group-item',
-            handle: '.list-group-item',
-            sort: true,
-            filter: '.sortable-disabled',
-            chosenClass: 'active'
+        Sortable.create(blocks_to, {
+        group: 'list-1',
+        handle: '.list-group-item'
         });
     </script>
 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
 
     <script>
-        // $(function () {
-        //     $("#contests_to").sortable({
-        //         change: function(event, ui) {
-        //         // var idsInOrder = $("#contests_to").sortable("toArray");
-        //         // alert(idsInOrder);
-        //         // alert('change');
-        //         }
-        //     });
-        // });
+        $(function () {
+            $("#blocks_to").sortable({
+                change: function(event, ui) {
+                }
+            });
+        });
         $("#submit_button").on("click",
             function(e){
+                // alert('button');
                 // e.preventDefault();
-                var idsInOrder = $("#contests_to").sortable("toArray");
+                var idsInOrder = $("#blocks_to").sortable("toArray");
                 // alert(idsInOrder);
-                document.getElementById("contest_ids").value = idsInOrder.join(',');
+                document.getElementById("block_ids").value = idsInOrder.join(',');
                 $("#myform").submit();
         });
 

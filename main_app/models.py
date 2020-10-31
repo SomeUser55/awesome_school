@@ -7,13 +7,33 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 
-from main_app import db, login
+from main_app import db, login_manager
 
 # Base = declarative_base()
 
 user_role_rel = Table('user_role_rel', db.Model.metadata,
     Column('user_id', Integer, ForeignKey('user.id'), nullable=False),
     Column('role_id', Integer, ForeignKey('role.id'), nullable=False),
+)
+
+contest_block_rel = Table('contest_block_rel', db.Model.metadata,
+    Column('contest_id', Integer, ForeignKey('contest.id')),
+    Column('block_id', Integer, ForeignKey('block.id')),
+)
+
+team_student_rel = Table('team_student_rel', db.Model.metadata,
+    Column('team_id', Integer, ForeignKey('team.id')),
+    Column('student_id', Integer, ForeignKey('user.id')),
+)
+
+team_mentor_rel = Table('team_mentor_rel', db.Model.metadata,
+    Column('team_id', Integer, ForeignKey('team.id')),
+    Column('mentor_id', Integer, ForeignKey('user.id')),
+)
+
+track_block_rel = Table('track_block_rel', db.Model.metadata,
+    Column('track_id', Integer, ForeignKey('track.id')),
+    Column('block_id', Integer, ForeignKey('block.id')),
 )
 
 class User(UserMixin, db.Model):
@@ -23,8 +43,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(32), index=True, unique=True)
     password_hash = db.Column(db.String(128))
 
-    # def __repr__(self):
-    #     return '<User {}>'.format(self.username)
+    def __repr__(self):
+        return '<User {}>'.format(self.first_name)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -36,6 +56,18 @@ class User(UserMixin, db.Model):
         "Role",
         secondary=user_role_rel,
         back_populates="users",
+    )
+
+    student_teams = relationship(
+        "Team",
+        secondary=team_student_rel,
+        back_populates="students",
+    )
+
+    mentor_teams = relationship(
+        "Team",
+        secondary=team_mentor_rel,
+        back_populates="mentors",
     )
 
 
@@ -59,10 +91,18 @@ class Role(db.Model):
         return '<Role {}>'.format(self.role_type)
 
 
-contest_block_rel = Table('contest_block_rel', db.Model.metadata,
-    Column('contest_id', Integer, ForeignKey('contest.id')),
-    Column('block_id', Integer, ForeignKey('block.id')),
-)
+class Team(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(32))
+    students = relationship(
+        "User",
+        secondary=team_student_rel,
+        back_populates="student_teams")
+
+    mentors = relationship(
+        "User",
+        secondary=team_mentor_rel,
+        back_populates="mentor_teams")
 
 
 class Contest(db.Model):
@@ -88,6 +128,20 @@ class Block(db.Model):
         "Contest",
         secondary=contest_block_rel,
         back_populates="blocks")
+    tracks = relationship(
+        "Track",
+        secondary=track_block_rel,
+        back_populates="blocks")
+
+
+class Track(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(32))
+    desc = db.Column(Text())
+    blocks = relationship(
+        "Block",
+        secondary=track_block_rel,
+        back_populates="tracks")
 
 
 class Submit(db.Model):
@@ -99,6 +153,6 @@ class Submit(db.Model):
     create_tstamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 
-@login.user_loader
+@login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))

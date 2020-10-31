@@ -1,11 +1,60 @@
 
+from functools import wraps
+
 from flask import request, render_template, redirect, url_for, flash
-from flask_login import login_required, current_user, login_user, logout_user
+from flask_login import current_user, login_user, logout_user  # login_required
 
-from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, SolveContestForm, CreateBlockForm, DeleteContestsForm, DeleteBlocksForm
-from main_app import app, db
+from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, SolveContestForm, \
+    CreateBlockForm, DeleteContestsForm, DeleteBlocksForm, DeleteTracksForm, \
+    CreateTrackForm
+from main_app import app, db, login_manager
 
-from main_app.models import User, Contest, Submit, Block, contest_block_rel, Role
+from main_app.models import User, Contest, Submit, Block, contest_block_rel, Role, Track
+
+
+STUDENT_ROLE = Role.query.filter_by(role_type='student').first()
+MENTOR_ROLE = Role.query.filter_by(role_type='mentor').first()
+ADMIN_ROLE = Role.query.filter_by(role_type='admin').first()
+EDITOR_GROUP = set([MENTOR_ROLE, ADMIN_ROLE])
+
+# MENTOR_ROLE = "MENTOR_ROLE"
+
+
+def roles_required(*, roles='ANY'):
+    def wrapper(fn):
+        @wraps(fn)
+        def decorated_view(*args, **kwargs):
+            if not current_user.is_authenticated:
+                # print('if not current_user.is_authenticated')
+                return login_manager.unauthorized()
+
+            if roles=='ANY' and len(current_user.roles) > 0:
+                # print("f roles=='ANY' and len(current_user.roles) > 0")
+                return fn(*args, **kwargs)
+
+            if set(roles).issubset(set(current_user.roles)):
+                # print('if set(roles).issubset(set(current_user.roles))')
+                return fn(*args, **kwargs)
+
+            # print('return login_manager.unauthorized()')
+            return login_manager.unauthorized()
+
+        return decorated_view
+
+    return wrapper
+
+
+@app.context_processor
+def utility_processor():
+    def is_editor(user):
+        # return EDITOR_GROUP.issubset(set(user.roles))
+        # return MENTOR_ROLE in user.roles
+        # print('user.roles', user.roles, type(user.roles))
+        # print('MENTOR_ROLE', MENTOR_ROLE, type(MENTOR_ROLE))
+        # return user.roles[0].role_type == MENTOR_ROLE 
+        return True
+
+    return dict(is_editor=is_editor)
 
 
 @app.route('/')
@@ -18,7 +67,7 @@ def index():
 
 
 @app.route('/progress/')
-@login_required
+# @login_required
 def progress():
     return render_template(
         'progress.html',
@@ -28,18 +77,23 @@ def progress():
 
 
 @app.route('/logout')
-@login_required
+# @login_required
+@roles_required()
 def logout():
     logout_user()
     return redirect(url_for('index'))
 
 
 @app.route('/account/<user_id>')
-@login_required
+# @login_required
+@roles_required()
 def account(user_id):
+    user = User.query.get(user_id)
+    roles = user.roles
     return render_template(
         'account.html',
         title='Account',
+        roles=roles,
     )
 
 
@@ -85,84 +139,9 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 
-@app.route('/courses')
-def courses():
-    links = []
-    # for course_id, course_info in db.courses_dict.items():
-    #     name = course_info['title']
-    #     links.append({
-    #         'name': name,
-    #         'href': f"/course/{course_id}"
-    #     })
-
-    return render_template(
-        'courses.html',
-        title='Courses',
-        links=links,
-    )
-
-
-@app.route('/course/<course_id>')
-def course(course_id):
-
-    course = db.courses_dict[course_id]
-    track_ids = course['track_ids']
-
-    track_links = []
-    for track_id in track_ids:
-        track = db.tracks_dict[track_id]
-        name = track['title']
-        track_links.append({
-            'name': name,
-            'href': f"/track/{track_id}"
-        })
-
-    title = course['title']
-    desc = course['desc']
-    return render_template(
-        'course.html',
-        title=title,
-        desc=desc,
-        links=track_links,
-    )
-
-
-@app.route('/track/<track_id>')
-def track(track_id):
-    track = db.tracks_dict[track_id]
-    lesson_ids = track['lesson_ids']
-
-    lesson_links = []
-    for lesson_id in lesson_ids:
-        lesson = db.lessons_dict[lesson_id]
-        name = lesson['title']
-        lesson_links.append({
-            'name': name,
-            'href': f"/lesson/{lesson_id}",
-        })
-
-    title = track['title']
-    desc = track['desc']
-    return render_template(
-        'track.html',
-        title=title,
-        links=lesson_links,
-        desc=desc,
-    )
-
-
-@app.route('/lesson/<lesson_id>')
-def lesson(lesson_id):
-    lesson = db.lessons_dict[lesson_id]
-    title = lesson['title']
-    return render_template(
-        'lesson.html',
-        title=title,
-        )
-
-
 @app.route('/block/<block_id>')
-@login_required
+# @login_required
+@roles_required()
 def block(block_id):
     block_obj = Block.query.get(block_id)
     print("block_obj.contests", block_obj.contests)
@@ -174,8 +153,22 @@ def block(block_id):
     )
 
 
+@app.route('/track/<track_id>')
+# @login_required
+@roles_required()
+def track(track_id):
+    track_obj = Track.query.get(track_id)
+    return render_template(
+        'track.html',
+        title='Track',
+        track=track_obj,
+        blocks=track_obj.blocks,
+    )
+
+
 @app.route('/webinar')
-@login_required
+# @login_required
+@roles_required()
 def webinar():
     return render_template(
         'webinar.html',
@@ -184,10 +177,10 @@ def webinar():
 
 
 @app.route('/contest/<contest_id>', methods=['GET', 'POST'])
-@login_required
+# @login_required
+@roles_required()
 def contest(contest_id):
     contest_obj = Contest.query.get(contest_id)
-    print(contest_obj.blocks)
     form = SolveContestForm()
 
     if request.method == 'POST':
@@ -213,7 +206,8 @@ def contest(contest_id):
 
 
 @app.route('/contests', methods=['GET', 'POST'])
-@login_required
+# @login_required
+@roles_required()
 def contests():
     form = DeleteContestsForm()
     contests = Contest.query.all()
@@ -236,7 +230,8 @@ def contests():
 
 
 @app.route('/blocks', methods=['GET', 'POST'])
-@login_required
+# @login_required
+@roles_required()
 def blocks():
     form = DeleteBlocksForm()
     blocks = Block.query.all()
@@ -257,15 +252,40 @@ def blocks():
     )
 
 
+@app.route('/tracks', methods=['GET', 'POST'])
+# @login_required
+@roles_required()
+def tracks():
+    form = DeleteTracksForm()
+    tracks_list = Track.query.all()
+    if request.method == 'POST' and form.validate_on_submit():
+        print("if request.method == 'POST' and form.validate_on_submit():")
+        for track_id in form.track_ids.data.split(','):
+            Track.query.filter_by(id=track_id).delete()
+            db.session.commit()
+        return redirect(url_for('tracks'))
+
+    return render_template(
+        'tracks.html',
+        title='Tracks',
+        tracks=tracks_list,
+        form=form,
+    )
+
+
 @app.route('/submits')
-@login_required
+# @login_required
+@roles_required()
 def submits():
-    submits = Submit.query.all()
+
+    
 
     query = db.session.query(Submit, User, Contest)\
         .join(User, User.id==Submit.user_id)\
             .join(Contest, Contest.id==Submit.contest_id)
     records = query.all()
+
+
 
     return render_template(
         'submits.html',
@@ -275,7 +295,8 @@ def submits():
 
 
 @app.route('/submit/<submit_id>')
-@login_required
+# @login_required
+@roles_required()
 def submit(submit_id):
     submit_obj = Submit.query.get(submit_id)
     contest_id = submit_obj.__dict__['contest_id']
@@ -289,12 +310,10 @@ def submit(submit_id):
 
 
 @app.route('/create', methods=['GET', 'POST'])
-@login_required
+@roles_required()
 def create():
     form = CreateContestForm()
-
     if request.method == 'POST':
-        # form = CreateContestForm()
         if form.validate_on_submit():
             contest = Contest(
                 title=form.title.data,
@@ -319,7 +338,8 @@ def create():
 
 
 @app.route('/edit/<contest_id>', methods=['GET', 'POST'])
-@login_required
+# @login_required
+@roles_required()
 def edit(contest_id):
     contest_obj = Contest.query.get(contest_id)
     form = CreateContestForm(obj=contest_obj)
@@ -346,7 +366,8 @@ def edit(contest_id):
 
 
 @app.route('/edit_block/<block_id>', methods=['GET', 'POST'])
-@login_required
+# @login_required
+@roles_required()
 def edit_block(block_id):
     block_obj = Block.query.get(block_id)
     form = CreateBlockForm(obj=block_obj)
@@ -364,11 +385,6 @@ def edit_block(block_id):
             print('contest_ids', contest_ids)
             block_obj.contests = contests_list
 
-
-            rels = contest_block_rel.query.all()
-            print(rels)
-
-
             db.session.commit()
             flash('Contest edited')
             return redirect(url_for('block', block_id=block_obj.id))
@@ -385,9 +401,43 @@ def edit_block(block_id):
     )
 
 
+@app.route('/edit_track/<track_id>', methods=['GET', 'POST'])
+# @login_required
+@roles_required(roles=EDITOR_GROUP)
+def edit_track(track_id):
+    track_obj = Track.query.get(track_id)
+    form = CreateTrackForm(obj=track_obj)
+    if request.method == 'POST' and form.validate_on_submit():
+        track_obj.title = form.title.data
+        track_obj.desc = form.desc.data
+
+        blocks_list = []
+        block_ids = [id_ for id_ in form.block_ids.data.split(',') if id_]
+        for block_id in block_ids:
+            block_obj = Block.query.get(block_id)
+            blocks_list.append(block_obj)
+
+        print('blocks_list', blocks_list)
+        track_obj.blocks = blocks_list
+
+        db.session.commit()
+        return redirect(url_for('track', track_id=track_id))
+        
+        flash('Wrong')
+
+    unused_blocks = Block.query.filter_by(tracks=None)
+    return render_template(
+        'create_track.html',
+        title='Edit',
+        unused_blocks=unused_blocks,
+        used_blocks=track_obj.blocks,
+        form=form,
+    )
+
 
 @app.route('/create_block', methods=['GET', 'POST'])
-@login_required
+# @login_required
+@roles_required()
 def create_block():
     form = CreateBlockForm()
     if request.method == 'POST':
@@ -418,13 +468,33 @@ def create_block():
     )
 
 
-# @app.route('/delete', methods=['GET', 'POST'])
+@app.route('/create_track', methods=['GET', 'POST'])
 # @login_required
-# def delete():
-    
-#     return render_template(
-#         'create_block.html',
-#         title='Create',
-#         contests=contests,
-#         form=form,
-#     )
+@roles_required(roles=EDITOR_GROUP)
+def create_track():
+    form = CreateTrackForm()
+    if request.method == 'POST' and form.validate_on_submit():
+        print("if request.method == 'POST' and form.validate_on_submit()")
+        track_obj = Track(
+            title=form.title.data,
+            desc=form.desc.data,
+        )
+
+        block_ids = [id_ for id_ in form.block_ids.data.split(',') if id_]
+        for block_id in block_ids:
+            print('block_id', block_id)
+            block_obj = Block.query.get(block_id)
+            track_obj.blocks.append(block_obj)
+
+            db.session.add(track_obj)
+            db.session.commit()
+        return redirect(url_for('tracks'))
+
+    blocks_list = Block.query.all()
+    return render_template(
+        'create_track.html',
+        title='Create',
+        unused_blocks=blocks_list,
+        used_blocks=[],
+        form=form,
+    )

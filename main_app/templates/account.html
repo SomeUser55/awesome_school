@@ -4,12 +4,18 @@
 
 {% block content %}
     <div class="text">
-        Hello, {{ current_user.first_name }}
+        Hello, {{ current_user.first_name }}!
     </div>
+    You are:
+    {% for role in roles %}
+        {{ role.role_type }} 
+    {% endfor %}
 
-    <div>Your groups: ...</div>
+    <div>Your teams: ...</div>
+
+    <div>Your tracks: ...</div>
     
-    <div>Your homework: ...</div>
-    <div>Your webinars schedule: ...</div>
+    <!-- <div>Your homework: ...</div>
+    <div>Your webinars schedule: ...</div> -->
         
 {% endblock %}
