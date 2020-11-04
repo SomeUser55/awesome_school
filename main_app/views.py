@@ -8,8 +8,8 @@ from main_app.forms import LoginForm, RegistrationForm, CreateContestForm, Solve
     CreateBlockForm, DeleteContestsForm, DeleteBlocksForm, DeleteTracksForm, \
     CreateTrackForm
 from main_app import app, db, login_manager
-
 from main_app.models import User, Contest, Submit, Block, contest_block_rel, Role, Track
+from ..tasks import check_submit
 
 
 STUDENT_ROLE = Role.query.filter_by(role_type='student').first()
@@ -185,15 +185,18 @@ def contest(contest_id):
 
     if request.method == 'POST':
         if form.validate_on_submit():
-            is_correct = True
+            # is_correct = True
             submit = Submit(
                 code=form.code.data,
                 contest_id=contest_id,
                 user_id=current_user.id,
-                is_correct=is_correct,
+                # is_correct=is_correct,
             )
             db.session.add(submit)
             db.session.commit()
+            submit_id = submit.id
+            print('submit_id', submit_id)
+            check_submit.delay(submit_id)
             flash('Code submited')
             return redirect(url_for('contest', contest_id=contest_obj.id))
 
