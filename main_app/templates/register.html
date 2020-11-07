@@ -4,9 +4,9 @@
   <h1>{% block title %}Register{% endblock %}</h1>
 {% endblock %}
 
-{% set nav_item_id = 'register' %}
-
 {% block content %}
+<div hidden id="nav_item_id">register</div>
+
     <h1>Register</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}

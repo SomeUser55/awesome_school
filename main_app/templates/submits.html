@@ -1,28 +1,10 @@
 
 {% extends 'base.html' %}
 
-
-
-<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
-
-
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
-
-
-{% set nav_item_id = 'submits' %}
-
 {% block content %}
-    <!-- <div class="my_title">
-        {{title}}
-    </div> -->
-<!-- 
-    <div class="text">
-        Submits:
-    </div> -->
+<div hidden id="nav_item_id">submits</div>
 
     <table id="submits_info" class="display" style="width:100%">
-    <!-- <table id="submits_info"> -->
         <thead>
             <tr>
                 <th>Date</th>
@@ -34,11 +16,10 @@
         <tbody>
             {% for submit, user, contest in records %}
                 <tr>
-                    <td><a href="{{ url_for('submit', submit_id=submit.id) }}">{{ submit.create_tstamp }}</a></td>
-                    <!-- <td>2011/01/25</td> -->
+                    <td><a href="{{ url_for('submit_view', submit_id=submit.id) }}">{{ submit.create_tstamp }}</a></td>
                     <td>{{ submit.is_correct }}</td>
                     <td>{{ user.first_name }} {{ user.last_name  }}</td>
-                    <td><a href="{{ url_for('contest', contest_id=contest.id) }}">{{ contest.title }}</a></td>
+                    <td><a href="{{ url_for('contest_view', contest_id=contest.id) }}">{{ contest.title }}</a></td>
                 </tr>
             {% endfor %}
         </tbody>

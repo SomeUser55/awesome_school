@@ -2,28 +2,11 @@
 {% extends 'base.html' %}
 
 
-
-<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
-
-
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
-
-
-{% set nav_item_id = 'blocks' %}
-
 {% block content %}
-
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.1/css/select.dataTables.min.css">
-
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/select/1.3.1/js/dataTables.select.min.js"></script>
-
+    <div hidden id="nav_item_id">blocks</div>
 
     {% if is_editor(current_user) %}
-        <a href="{{ url_for('create_block') }}">Create New Block</a>
+        <a href="{{ url_for('create_block_view') }}">Create New Block</a>
 
         <form action="" method="post"  novalidate id='myform'>
             {{ form.hidden_tag() }}
@@ -43,18 +26,12 @@
             {% for block in blocks %}
                 <tr id="{{ block.id }}">
                     <td></td>
-                    <td><a href="{{ url_for('block', block_id=block.id) }}">{{ block.title }}</a></td>
+                    <td><a href="{{ url_for('block_view', block_id=block.id) }}">{{ block.title }}</a></td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <!-- <script>
-        $(document).ready( function () {
-            $('#blocks_info').DataTable();
-        } );
-    </script> -->
-    
     <script>
         $(document).ready(function() {
             table = $('#blocks_info').DataTable( {
@@ -79,7 +56,7 @@
                 $.each(selected, function(i, val) {
                     ids.push(val.id);
                 });
-                document.getElementById("block_ids").value = ids.join(',');
+                document.getElementById("item_ids").value = ids.join(',');
                 $("#myform").submit();
         });
     </script>

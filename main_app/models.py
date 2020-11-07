@@ -156,3 +156,9 @@ class Submit(db.Model):
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
+
+STUDENT_ROLE = 'student'
+MENTOR_ROLE = 'mentor'
+ADMIN_ROLE = 'admin'
+EDITORS = set([MENTOR_ROLE, ADMIN_ROLE])

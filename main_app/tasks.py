@@ -1,7 +1,8 @@
 from celery import Celery
 
+
 from main_app import db
-from main_app.models import User, Contest, Submit, Block, contest_block_rel, Role, Track
+from main_app.models import Submit, Contest
 
 
 app = Celery('tasks', broker='redis://localhost')

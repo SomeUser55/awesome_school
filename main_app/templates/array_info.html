@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<a href="{{ link_edit }}">Edit</a>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm">
+        {{ array.title }}<br>
+        </div>
+        <div class="col-sm">
+        {{ array.desc }}<br>
+        </div>
+    </div>
+</div>    
+
+
+<table id="array_info" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Desctiption</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+            <tr>
+                <td><a href="{{ item_link }}">{{ item.title }}</a></td>
+                <td>{{ item.desc }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    $(document).ready( function () {
+        $('#array_info').DataTable();
+    } );
+</script>
+{% endblock %}

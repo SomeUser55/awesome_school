@@ -1,40 +1,19 @@
 
 {% extends 'base.html' %}
 
-{% set nav_item_id = 'contests' %}
 
 {% block content %}
-
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.1/css/select.dataTables.min.css">
-
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/select/1.3.1/js/dataTables.select.min.js"></script>
+    <div hidden id="nav_item_id">contests</div>
+    
 
     {% if is_editor(current_user) %}
-        <a href="{{ url_for('create') }}">Create New Contest</a>
+        <a href="{{ url_for('create_contest_view') }}">Create New Contest</a>
 
         <form action="" method="post"  novalidate id='myform'>
             {{ form.hidden_tag() }}
             {{ form.submit() }}
         </form>
     {% endif %}
-
-
-    <!-- <div class="my_title">
-        {{title}}
-    </div> -->
-
-    <!-- <div class="text">
-        Contests:
-    </div> -->
-
-    <!-- {% for contest in contests %}
-        <li>
-            <a href="{{ url_for('contest', contest_id=contest.id) }}">{{contest.title}}</a>
-        </li>
-    {% endfor %} -->
 
 
     <table id="contests_info" class="display" style="width:100%">
@@ -51,7 +30,7 @@
             {% for contest in contests %}
                 <tr id="{{ contest.id }}">
                     <td></td>
-                    <td> <a href="{{ url_for('contest', contest_id=contest.id) }}"> {{contest.title}} </a> </td>
+                    <td> <a href="{{ url_for('contest_view', contest_id=contest.id) }}"> {{contest.title}} </a> </td>
                     <td>{{ contest.desc }}</td>
                 </tr>
             {% endfor %}
@@ -82,7 +61,7 @@
                 $.each(selected, function(i, val) {
                     ids.push(val.id);
                 });
-                document.getElementById("contest_ids").value = ids.join(',');
+                document.getElementById("item_ids").value = ids.join(',');
                 $("#myform").submit();
         });
     </script>

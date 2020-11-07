@@ -1,46 +1,7 @@
-{% extends 'base.html' %}
-
-{% set nav_item_id = 'block' %}
+{% extends 'array_info.html' %}
 
 {% block content %}
-    <!-- <div class="text">
-        lesson-block content
-    </div> -->
+    <div hidden id="nav_item_id">tracks</div>
 
-    <a href="{{ url_for('edit_track', track_id=track.id) }}">Edit</a>
-
-    <div class="container">
-        <div class="row">
-          <div class="col-sm">
-            {{ track.title }}<br>
-          </div>
-          <div class="col-sm">
-            {{ track.desc }}<br>
-          </div>
-        </div>
-      </div>    
-
-      Blocks:
-      <table id="blocks_info" class="display" style="width:100%">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Desctiption</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for block in blocks %}
-                    <tr>
-                        <td><a href="{{ url_for('block', block_id=block.id) }}">{{ block.title }}</a></td>
-                        <td>{{ block.desc }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    
-        <script>
-            $(document).ready( function () {
-                $('#blocks_info').DataTable();
-            } );
-        </script>
+    {{ super() }}
 {% endblock %}

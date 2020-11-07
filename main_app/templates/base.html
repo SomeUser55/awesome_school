@@ -2,75 +2,73 @@
 
 <html>
     <head>
-        <title> {{title}} </title>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/select/1.3.1/js/dataTables.select.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/RubaXa/Sortable/Sortable.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+    
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
-        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.1/css/select.dataTables.min.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,700,700i" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    
+        <title> {{title}} </title>
+        
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     </head>
+
+
     <body>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <!-- <a class="navbar-brand" href="#">Navbar</a> -->
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
 
-                <!-- <li class="nav-item" id="index">
-                  <a class="nav-link" href="{{ url_for('index') }}">Home <span class="sr-only">(current)</span></a>
-                </li> -->
-
                 {% if current_user.is_authenticated %}
                     <li class="nav-item" id="account">
-                        <a class="nav-link" href="{{ url_for('account', user_id=current_user.id) }}">Account</a>
+                        <a class="nav-link" href="{{ url_for('account_view', user_id=current_user.id) }}">Account</a>
                     </li>
 
-                    <!-- <li class="nav-item" id="webinar">
-                        <a class="nav-link" href="{{ url_for('webinar') }}">Webinar</a>
-                    </li> -->
-<!-- 
-                    <li class="nav-item" id="progress">
-                        <a class="nav-link" href="{{ url_for('progress') }}">Progress</a>
-                    </li> -->
 
                     <li class="nav-item" id="contests">
-                        <a class="nav-link" href="{{ url_for('contests') }}">Contests</a>
+                        <a class="nav-link" href="{{ url_for('contests_view') }}">Contests</a>
                     </li>
 
                     <li class="nav-item" id="blocks">
-                        <a class="nav-link" href="{{ url_for('blocks') }}">Blocks</a>
+                        <a class="nav-link" href="{{ url_for('blocks_view') }}">Blocks</a>
                     </li>
 
                     <li class="nav-item" id="tracks">
-                        <a class="nav-link" href="{{ url_for('tracks') }}">Tracks</a>
+                        <a class="nav-link" href="{{ url_for('tracks_view') }}">Tracks</a>
                     </li>
 
                     <li class="nav-item" id="submits">
-                        <a class="nav-link" href="{{ url_for('submits') }}">Submitions</a>
+                        <a class="nav-link" href="{{ url_for('submits_view') }}">Submitions</a>
                     </li>
 
-                    <!-- <li class="nav-item" id="create">
-                        <a class="nav-link" href="{{ url_for('create') }}">Create</a>
-                    </li> -->
 
                     <li class="nav-item" id="logout">
-                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        <a class="nav-link" href="{{ url_for('logout_view') }}">Logout</a>
                     </li>
                     
                 {% else %}
                     <li class="nav-item" id="login">
-                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        <a class="nav-link" href="{{ url_for('login_view') }}">Login</a>
                     </li>
 
                     <li class="nav-item" id="register">
-                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                        <a class="nav-link" href="{{ url_for('register_view') }}">Register</a>
                     </li>
                 {% endif %}
 
@@ -78,16 +76,10 @@
             </div>
           </nav>
 
-          <script>
-            var element = document.getElementById("{{ nav_item_id }}");
-            console.log(element);
-            if (element !== null) {
-                element.classList.add("active");
-            }
-            
-        </script>
-        {% block content %}{% endblock %}
-        <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
-        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script> -->
-    </body>
+
+        {% block content %}
+        {% endblock %}
+        <script type="text/javascript" src="{{ url_for('static', filename='scripts.js') }}"></script>
+        
+   </body>
 </html>

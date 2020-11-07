@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
-{% set nav_item_id = 'account' %}
-
 {% block content %}
+    <div hidden id="nav_item_id">account</div>
+
     <div class="text">
         Hello, {{ current_user.first_name }}!
     </div>
@@ -14,8 +14,5 @@
     <div>Your teams: ...</div>
 
     <div>Your tracks: ...</div>
-    
-    <!-- <div>Your homework: ...</div>
-    <div>Your webinars schedule: ...</div> -->
-        
+
 {% endblock %}

@@ -47,39 +47,13 @@ class SolveContestForm(FlaskForm):
     submit = SubmitField('Run')
 
 
-class CreateBlockForm(FlaskForm):
+class CreateArrayForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     desc = TextAreaField('Description', validators=[DataRequired()])
-    # contest_ids = FieldList(StringField('contest_id'), min_entries=2)
-    contest_ids = HiddenField()
-    submit = SubmitField('Save', id='submit_button')
+    ids_selected = HiddenField()
+    submit = SubmitField('Save', id='submit_selected')
 
 
-class CreateForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
-    desc = TextAreaField('Description', validators=[DataRequired()])
-    # contest_ids = FieldList(StringField('contest_id'), min_entries=2)
-    contest_ids = HiddenField()
-    submit = SubmitField('Save', id='submit_button')
-
-
-class DeleteContestsForm(FlaskForm):
-    contest_ids = HiddenField(validators=[DataRequired()])
+class DeleteItemsForm(FlaskForm):
+    item_ids = HiddenField(validators=[DataRequired()])
     submit = SubmitField('Delete', id='submit_button')
-
-
-class DeleteBlocksForm(FlaskForm):
-    block_ids = HiddenField(validators=[DataRequired()])
-    submit = SubmitField('Delete', id='submit_button')
-
-
-class DeleteTracksForm(FlaskForm):
-    track_ids = HiddenField(validators=[DataRequired()])
-    submit = SubmitField('Delete', id='submit_button')
-
-
-class CreateTrackForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
-    desc = TextAreaField('Description', validators=[DataRequired()])
-    block_ids = HiddenField()
-    submit = SubmitField('Save', id='submit_button')
